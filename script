@@ -1,0 +1,47 @@
+#!/bin/bash
+
+DIRECTORY=$(pwd)
+TARNAME="Backup"
+
+while [ -n "$1" ]
+do
+    case "$1" in
+    -d) if [[ $2 == /* ]]
+        then
+            DIRECTORY=$HOME$2
+        else
+            DIRECTORY=$DIRECTORY/$2
+	fi 
+        shift ;;
+    -o) TARNAME=$2
+        shift ;;
+    -p) partition=$2
+        shift ;;
+    * ) break ;;
+    esac
+    shift
+done
+
+cd $DIRECTORY
+
+if [ -e "$TARNAME" ]
+then
+    rm -r $TARNAME
+fi
+mkdir $TARNAME
+
+for ext in "$@"
+do
+    count=1
+    for file in $(find -name *.$ext)
+    do
+        cp $file $TARNAME/$count.$ext
+        (( count++ ))
+    done
+done
+
+tar -cf $TARNAME.tar $TARNAME
+rm -r $TARNAME
+mv $TARNAME.tar $TARNAME
+
+echo "done"
